@@ -31,6 +31,41 @@ export const getExistingMetadata = () => (axios({
   url: `${komgaApiUrl}/series/${getSeriesId()}`,
 }));
 
+export const uploadCover = (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return axios({
+    method: 'post',
+    url: `${komgaApiUrl}/series/${getSeriesId()}/thumbnails`,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    data: formData,
+  });
+};
+
+export const downloadBangumiCover = async (url) => {
+  const response = await fetch(`https://cors-anywhere.herokuapp.com/${url}`, {
+    method: 'get',
+  });
+  return response.blob();
+};
+
+export const searchBangumi = (search) => (axios({
+  method: 'post',
+  url: 'https://api.bgm.tv/v0/search/subjects?limit=10',
+  data: {
+    keyword: search,
+    filter: {
+      type: [1],
+      rating: ['>0.0'],
+      rank: ['>=0'],
+      series: true,
+      nsfw: true,
+    },
+  },
+}));
+
 export const searchKitsu = (search) => (axios({
   method: 'get',
   url: `https://kitsu.io/api/edge/manga?filter[text]=${search}&page[limit]=10`,

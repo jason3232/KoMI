@@ -68,5 +68,6 @@ export const MU = 'MANGA_UPDATES';
 export const MANGADEX = 'MANGADEX';
 export const KITSU = 'KITSU';
 export const SEARCH = 'SEARCH';
+export const BANGUMI = 'BANGUMI';
 
 export const KOMGA_METADATA_URL = '';

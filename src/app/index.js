@@ -7,6 +7,7 @@ import { getCookie } from '../helpers';
 import Anilist from '../anilist';
 import Kitsu from '../kitsu';
 import MAL from '../mal';
+import Bangumi from '../bangumi';
 import Modal from '../modal';
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
         {window?.komga?.enabledSources?.aniList && <Anilist />}
         {window?.komga?.enabledSources?.kitsu && <Kitsu />}
         {window?.komga?.enabledSources?.myAnimeList && <MAL />}
+        {window?.komga?.enabledSources?.bangumi && <Bangumi />}
         <Modal />
       </div>
     </ThemeProvider>

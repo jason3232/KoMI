@@ -4,6 +4,9 @@ import { useDispatch, shallowEqual, useSelector } from 'react-redux';
 
 import { Col, Row } from 'react-styled-flexboxgrid';
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
+import {
+  List, ListItem, ListItemText, ListSubheader,
+} from '@material-ui/core';
 import IconButton from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -45,6 +48,9 @@ const Match = () => {
   };
 
   const synonymLength = selectedSeries && selectedSeries.synonyms && selectedSeries.synonyms.length;
+  const hasAltTitles = selectedSeries
+    && selectedSeries.alternativeTitles
+    && selectedSeries.alternativeTitles.length;
   const classes = useStyles();
 
   return (
@@ -56,20 +62,20 @@ const Match = () => {
             <div className={classes.flexWrapper}>
               <h2>Current Match</h2>
               {selectedSeries?.siteUrl
-              && (
-              <IconButton
-                className={classes.iconButton}
-                aria-label="Go to series metadata page in new tab"
-                onClick={goToMatch}
-                onKeyDown={(e) => {
-                  if (e?.code === 'Space' || e?.code === 'Enter') {
-                    goToMatch();
-                  }
-                }}
-              >
-                <OpenInNewIcon className={classes.OpenInNewIcon} />
-              </IconButton>
-              )}
+                && (
+                  <IconButton
+                    className={classes.iconButton}
+                    aria-label="Go to series metadata page in new tab"
+                    onClick={goToMatch}
+                    onKeyDown={(e) => {
+                      if (e?.code === 'Space' || e?.code === 'Enter') {
+                        goToMatch();
+                      }
+                    }}
+                  >
+                    <OpenInNewIcon className={classes.OpenInNewIcon} />
+                  </IconButton>
+                )}
             </div>
 
             <Row>
@@ -78,9 +84,10 @@ const Match = () => {
                   <Col xs={6}>
                     <img
                       style={{ maxWidth: 220 }}
-                      src={selectedSeries?.coverImage?.extraLarge
+                      src={selectedSeries?.coverImage?.common
+                        || selectedSeries?.coverImage?.medium
                         || selectedSeries?.coverImage?.large
-                        || selectedSeries?.coverImage?.medium}
+                        || selectedSeries?.coverImage?.extraLarge}
                       alt={selectedSeries?.title?.english
                         || selectedSeries?.title?.romaji
                         || selectedSeries?.title?.native}
@@ -94,34 +101,72 @@ const Match = () => {
                     && (
                       <>
                         <h3>Title</h3>
-                        <p>
-                          English:
-                          {selectedSeries.title?.english}
-                        </p>
-                        <p>
-                          Romaji:
-                          {selectedSeries.title?.romaji}
-                        </p>
-                        <p>
-                          Native:
-                          {selectedSeries.title?.native}
-                        </p>
+                        {selectedSeries.title?.english && (
+                          <p>
+                            English:
+                            {selectedSeries.title?.english}
+                          </p>
+                        )}
+                        {selectedSeries.title?.romaji && (
+                          <p>
+                            Romaji:
+                            {selectedSeries.title?.romaji}
+                          </p>
+                        )}
+                        {selectedSeries.title?.native && (
+                          <p>
+                            Native:
+                            {selectedSeries.title?.native}
+                          </p>
+                        )}
+                        {selectedSeries.title?.chinese && (
+                          <p>
+                            Chinese:
+                            {selectedSeries.title?.chinese}
+                          </p>
+                        )}
                       </>
                     )}
-                  {selectedSeries.synonyms && selectedSeries.synonyms?.length > 0
-                    && (
-                      <>
-                        <p>
-                          Synonyms:&nbsp;
-                          {selectedSeries.synonyms?.map((synonym, index) => (
-                            <span>
-                              {synonym}
-                              {index < synonymLength - 1 && ','}
-                            </span>
-                          ))}
-                        </p>
-                      </>
-                    )}
+                  {!!hasAltTitles && (
+                    <List
+                      dense
+                      style={{
+                        maxHeight: 128,
+                        overflow: 'auto',
+                        backgroundColor: '#424242',
+                      }}
+                      subheader={(
+                        <ListSubheader
+                          disableGutters
+                          style={{
+                            top: -1,
+                          }}
+                        >
+                          Alternative Titles
+                        </ListSubheader>
+                      )}
+                    >
+                      {(selectedSeries.alternativeTitles || []).map((title) => (
+                        <ListItem disableGutters>
+                          <ListItemText primary={`${title?.label}: ${title?.title}`} />
+                        </ListItem>
+                      ))}
+                    </List>
+                  )}
+                  {!hasAltTitles
+                    && selectedSeries.synonyms && selectedSeries.synonyms?.length > 0 && (
+                    <>
+                      <p>
+                        Synonyms:&nbsp;
+                        {selectedSeries.synonyms?.map((synonym, index) => (
+                          <span>
+                            {synonym}
+                            {index < synonymLength - 1 && ','}
+                          </span>
+                        ))}
+                      </p>
+                    </>
+                  )}
                 </div>
 
                 {selectedSeries.description
@@ -171,7 +216,7 @@ const Match = () => {
                     {
                       match.title.english
                       || match.title.romaji
-                      || match.title.romaji
+                      || match.title.native
                       || match?.synonyms?.[0]
                     }
                   </a>

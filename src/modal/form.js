@@ -1,7 +1,11 @@
 import React from 'react';
 import { useDispatch, shallowEqual, useSelector } from 'react-redux';
 import { useForm, Controller } from 'react-hook-form';
-import { TextField } from '@material-ui/core';
+import {
+  Checkbox,
+  FormControlLabel,
+  List, ListItem, ListItemText, ListSubheader, TextField,
+} from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import SearchIcon from '@material-ui/icons/Search';
@@ -32,7 +36,7 @@ const MetadataModal = () => {
   };
 
   const {
-    control, handleSubmit, errors, reset, getValues,
+    register, control, handleSubmit, errors, reset, getValues,
   } = useForm({ defaultValues });
 
   React.useEffect(() => {
@@ -64,9 +68,30 @@ const MetadataModal = () => {
     display: 'flex',
   };
 
+  const linksInput = register('links');
+  const authorsInput = register('authors');
+  const coverInput = register('coverImage');
+
   return (
     <div>
       <form onSubmit={onSubmit}>
+        <input type="hidden" name={coverInput?.name} ref={coverInput?.ref} onChange={coverInput?.onChange} onBlur={coverInput?.onBlur} />
+        <FormControlLabel
+          label="Replace Cover"
+          control={(
+            <Controller
+              defaultValue
+              name="coverToggle"
+              control={control}
+              render={({ value, onChange }) => (
+                <Checkbox
+                  checked={!!value}
+                  onChange={(e) => onChange(e.target.checked)}
+                />
+              )}
+            />
+          )}
+        />
 
         <div style={{ position: 'relative' }}>
           <Controller
@@ -98,7 +123,6 @@ const MetadataModal = () => {
           inputProps={{
             readOnly: readOnly.sortTitle,
           }}
-
         />
 
         <Controller
@@ -113,8 +137,48 @@ const MetadataModal = () => {
           inputProps={{
             readOnly: readOnly.summary,
           }}
-
         />
+
+        <input type="hidden" name={linksInput?.name} ref={linksInput?.ref} onChange={linksInput?.onChange} onBlur={linksInput?.onBlur} />
+        <List
+          style={{
+            maxHeight: 260,
+            overflow: 'auto',
+            backgroundColor: '#424242',
+          }}
+          subheader={
+            <ListSubheader style={{ top: -1 }}>Links</ListSubheader>
+          }
+        >
+          {(defaultValues?.links || []).map(
+            (link) => (
+              <ListItem>
+                <ListItemText primary={link.label} secondary={link.url} />
+              </ListItem>
+            ),
+          )}
+        </List>
+
+        <input type="hidden" name={authorsInput?.name} ref={authorsInput?.ref} onChange={authorsInput?.onChange} onBlur={authorsInput?.onBlur} />
+        <List
+          style={{
+            maxHeight: 260,
+            overflow: 'auto',
+            backgroundColor: '#424242',
+          }}
+          subheader={
+            <ListSubheader style={{ top: -1 }}>Authors</ListSubheader>
+          }
+        >
+          {(defaultValues?.authors || []).map(
+            (author) => (
+              <ListItem>
+                <ListItemText primary={author.name} secondary={author.role} />
+              </ListItem>
+            ),
+          )}
+        </List>
+
         <Row>
           <Col xs={6}>
             <Controller

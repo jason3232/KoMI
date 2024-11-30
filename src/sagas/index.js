@@ -57,6 +57,12 @@ function* updateMetadata() {
       type: CONSTANTS.SEARCH,
     }));
 
+    const cover = data?.coverImage?.common || data?.coverImage?.medium;
+    if (data.coverToggle && cover && typeof cover === 'string') {
+      const coverFile = yield apis.downloadBangumiCover(cover);
+      yield call(apis.uploadCover, coverFile);
+    }
+
     yield call(apis.updateMetadata, data); // API Call
     yield put(actions.closeModal());
     // window.location.reload();
@@ -184,6 +190,41 @@ function* updateSelectedSeries(action) {
       show: false,
       type: CONSTANTS.SEARCH,
     }));
+  }
+}
+
+function* bangumiSearch({ title }) {
+  // Search series in Bangumi
+  try {
+    const [bangumiResponse, komgaResponse] = yield Promise.all([
+      apis.searchBangumi(title),
+      apis.getExistingMetadata(),
+    ]);
+
+    let list;
+    let seriesMedia;
+    if (bangumiResponse.status === 200) {
+      list = helpers.mapBangumiSearch(bangumiResponse?.data?.data);
+      seriesMedia = helpers.getBangumiSeriesMatch(title, list);
+      if (seriesMedia) {
+        seriesMedia.fetchDate = new Date().toLocaleString(undefined, {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        });
+      }
+    }
+
+    yield put(actions.updateSearchResults(list));
+    yield put(actions.updateExistingMetadata(komgaResponse.data.metadata));
+    yield call(updateSelectedSeries, {
+      series: seriesMedia,
+      existingMetadata: komgaResponse.data.metadata,
+      noLoader: true,
+    });
+    yield put(actions.openModal(CONSTANTS.BANGUMI));
+  } catch (error) {
+    console.error(error);
   }
 }
 
@@ -328,6 +369,9 @@ function* search(action) {
         break;
       case CONSTANTS.MANGADEX:
         yield call(mangadexSearch, data);
+        break;
+      case CONSTANTS.BANGUMI:
+        yield call(bangumiSearch, data);
         break;
 
       default:
